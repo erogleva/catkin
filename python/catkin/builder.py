@@ -810,6 +810,7 @@ def build_workspace_isolated(
     colorize=True,
     build_packages=None,
     quiet=False,
+    continue_on_failure=False,
     cmake_args=None,
     make_args=None,
     catkin_make_args=None,
@@ -843,6 +844,7 @@ def build_workspace_isolated(
     :param build_packages: specific packages to build (all parent packages
         in the topological order must have been built before), ``str``
     :param quiet: if True, hides some build output, ``bool``
+    :param continue_on_failure: if True, continues to build the workspace even if a package fails, ``bool``
     :param cmake_args: additional arguments for cmake, ``[str]``
     :param make_args: additional arguments for make, ``[str]``
     :param catkin_make_args: additional arguments for make but only for catkin
@@ -1059,13 +1061,21 @@ def build_workspace_isolated(
                     cmd += e.cmd
                 print(fmt("\n@{rf}Reproduce this error by running:"))
                 print(fmt("@{gf}@!==> @|") + cmd + "\n")
-                sys.exit('Command failed, exiting.')
+                if continue_on_failure:
+                    print('Command failed')
+                    last_env = get_new_env(package, pkg_develspace, installspace, install, last_env, destdir)
+                else:
+                    sys.exit('Command failed, exiting.')
             except Exception as e:
                 print("Unhandled exception of type '{0}':".format(type(e).__name__))
                 import traceback
                 traceback.print_exc()
                 _print_build_error(package, e)
-                sys.exit('Command failed, exiting.')
+                if continue_on_failure:
+                    print('Command failed')
+                    last_env = get_new_env(package, pkg_develspace, installspace, install, last_env, destdir)
+                else:
+                    sys.exit('Command failed, exiting.')
         else:
             cprint("Skipping package: '@!@{bf}" + package.name + "@|'")
             last_env = get_new_env(package, pkg_develspace, installspace, install, last_env, destdir)

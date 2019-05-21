@@ -65,6 +65,8 @@ def parse_args(args=None):
              'the workspace (only works together with --merge or --install)')
     add('-q', '--quiet', action='store_true', default=False,
         help='Suppresses the cmake and make output until an error occurs.')
+    add('--continue-on-failure', action='store_true', default=False,
+        help='Continue building the workspace even if a package fails')
     add('--cmake-args', nargs='*', type=str,
         help='Arbitrary arguments which are passes to CMake. '
              'It must be passed after other arguments since it collects all following options.')
@@ -145,6 +147,7 @@ def main():
         colorize=not opts.no_color,
         build_packages=opts.packages or ([] if opts.from_package is None else [opts.from_package]),
         quiet=opts.quiet,
+        continue_on_failure=opts.continue_on_failure,
         cmake_args=cmake_args,
         make_args=opts.make_args,
         catkin_make_args=opts.catkin_make_args,
